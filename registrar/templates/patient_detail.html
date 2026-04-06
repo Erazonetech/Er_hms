@@ -1,0 +1,82 @@
+{% extends "receptionist.html" %}
+{% block page_title %}Patient Details: {{ patient.name }} {% endblock %}
+{% block dashboard_content %}
+<nav class="bg-success text-white p-4 rounded-lg mb-4 shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex gap-3">
+            <a class="btn btn-outline-light" href="{% url 'add_visit' patient.id %}">Check in</a>
+            <a href="#" class="btn btn-outline-light">+ Appointment</a>
+        </div>
+    </div>
+</nav>
+<div class="container-fluid">
+    <!-- Main Patient Info Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Patient Overview</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5 class="text-muted">Demographics</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Name:</strong> {{ patient.name }}</li>
+                                <li><strong>Gender:</strong> {{ patient.gender|default:"N/A" }}</li>
+                                <li><strong>Age:</strong> {{ patient.age }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="text-muted">Contact Information</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Phone:</strong> {{ patient.phone|default:"N/A" }}</li>
+                                <li><strong>Address:</strong> {{ patient.address|linebreaksbr|default:"N/A" }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="text-muted">Medical Identifiers</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Patient MRN:</strong> {{ patient.record_no }}</li>
+                                <li><strong>National ID:</strong> {{ patient.national_id|default:"N/A" }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="row">        
+        <!-- Appointments Card -->
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">Upcoming Appointments</h4>
+                </div>
+                <div class="card-body">
+                    {% if appointments %}
+                    <div class="list-group">
+                        {% for appointment in appointments %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Dr. {{ appointment.appointed_by.get_ful_name }}</h5>
+                                <small>{{ appointment.date_time }}</small>
+                            </div>
+                            <p class="mb-1">
+                                {{ appointment.date|date:"M d, Y" }}
+                            </p>
+                            <small class="text-muted">Reason: {{ appointment.reason|truncatechars:40 }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">
+                        No upcoming appointments
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

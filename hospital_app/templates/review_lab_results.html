@@ -1,0 +1,66 @@
+{% extends "dashboard_base.html" %}
+{% block page_title %}Lab Results of {{ visit.patient.name }}{% endblock %}
+{% load custom_tags %}
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            My Account
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Appointments
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'notifications' %}">
+            Notifications
+        </a>
+    </li>
+{% endblock %}
+{% block dashboard_content %}
+    <div class="container mt-5">
+        {% if processed_results %}
+            <div class="mt-4">
+                <h3>Requested Tests</h3>
+                <div class="row row-cols-1 row-cols-md-3 g-3">
+                    {% for result in processed_results %}
+                        <div class="col">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h4 class="card-title">{{ result.test_name }}</h4>
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th class="p-2">Parameter</th>
+                                                <th class="p-2">Result</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for param_name, param_value in result.parameters.items %}
+                                                <tr>
+                                                    <td class="p-2">{{ param_name }}</td>
+                                                    <td class="p-2">{{ param_value }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <hr>
+            <div class="mt-6">
+                <a class="btn btn-success" href="{% url 'doctor_detail' visit.patient.id visit.id %}">
+                    Back to Diagnosis
+                </a>
+            </div>
+        {% else %}
+            <p class="mt-4 text-warning">No lab results available yet. </p>
+            <p class="mt-4 text-info">Status: {{ lab_request.get_status_display }}</p>
+        {% endif %}
+         <hr>
+    </div>
+{% endblock %}

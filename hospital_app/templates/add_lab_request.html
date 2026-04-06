@@ -1,0 +1,50 @@
+
+{% extends "dashboard_base.html" %}
+{% block page_title %}Welcome: Dr. {{ user.first_name }}{% endblock %}
+
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            My Account
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Appointments
+        </a>
+    </li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container mt-4">
+<div >
+    <h2>Request Lab Tests</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-4">
+            {{ form.visit }}  <!-- Hidden visit field -->
+            {{ form.tests }}  <!-- Render the checkboxes for selecting tests -->
+        </div>
+        <div class="mb-4">
+            {{ form.notes }}  <!-- Render notes field for additional instructions -->
+        </div>
+        {% if form.errors %}
+        <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
+            <strong>There were some errors in your form:</strong>
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+        <div class="mb-4">
+            <button type="submit" class="bg-green-500 text-black px-6 py-2 rounded hover:bg-green-600">Submit</button>
+        </div>
+    </form>
+</div>
+</div>
+{% endblock %}

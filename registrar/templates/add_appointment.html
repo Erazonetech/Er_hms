@@ -1,0 +1,44 @@
+{% extends "receptionist.html" %}
+{% block page_title %}Add Appointment{% endblock %}
+
+
+{% block dashboard_content %}
+<div class="container mt-4">
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <div class="row">
+        <!-- next_appointment_date Dropdown -->
+        <div class="col-md-4">
+            <div class="form-group">
+                <label class="form-label">Next Appointment Date</label>
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                    <div class="invalid-feedback d-block">
+                    {{ form.date.errors.as_text }}
+                    </div>
+                    {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="form-group">
+                <label class="form-label">Reason</label>
+                    {{ form.reason }}
+                    {% if form.reason.errors %}
+                    <div class="invalid-feedback d-block">
+                    {{ form.reason.errors.as_text }}
+                    </div>
+                    {% endif %}
+            </div>
+        </div>   
+        </div>
+        <div>
+        <hr>
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-success">
+            Submit
+        </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

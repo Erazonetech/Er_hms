@@ -1,0 +1,106 @@
+{% extends "dashboard_base.html" %}
+{% block page_title %}Assign to Ward{% endblock %}
+
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Patient Vitals
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Medication Schedule
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Ward Management
+        </a>
+    </li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container mt-4">
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <div class="row">
+        <!-- Ward Dropdown -->
+        <div class="col-md-4 mb-3">
+            <label for="ward" class="form-label">Choose a Ward:</label>
+            <select name="ward" id="ward" class="form-select {% if form.ward.errors %}is-invalid{% endif %}">
+                <option value="opd">Out Patient</option>
+                <option value="ipd">In Patient</option>
+                <option value="er">Emergency</option>
+            </select>
+            {% for error in form.ward.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label for="physician" class="form-label">Choose a physician:</label>
+            <select name="physician" id="physician" class="form-select {% if form.physician.errors %}is-invalid{% endif %}">
+                
+            </select>
+            {% for error in form.physician.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+        
+
+
+        <!-- Urgency Dropdown -->
+        <div class="col-md-4 mb-3">
+            <label for="urgency" class="form-label">Urgency:</label>
+            <select name="urgency" id="urgency" class="form-select {% if form.urgency.errors %}is-invalid{% endif %}">
+                <option value="non_urgent">No</option>
+                <option value="urgent">Yes</option>
+            </select>
+            {% for error in form.urgency.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-success">
+            Submit
+        </button>
+        </div>
+    </form>
+</div>
+ <!-- Include jQuery first -->
+<!-- Include jQuery from CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Include Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+        // Trigger change event on region field to load zones if it has a default value
+        if ($('#ward').val()) {
+            $('#ward').trigger('change');
+        }
+    });
+
+// On Department change, fetch physician via AJAX
+$('#ward').change(function() {
+    var department = $(this).val();
+    $.ajax({
+        url: "{% url 'get_doctor_by_department' %}",
+        data: {
+            'department': department
+        },
+        success: function(data) {
+            var physicianSelect = $('#physician');           
+            physicianSelect.empty();  // Clear existing options
+            physicianSelect.append('<option value="">Select physician</option>');  // Default option
+            data.forEach(function(doctor) {
+                physicianSelect.append('<option value="' + doctor.id + '">' + doctor.first_name + ' '+ doctor.middle_name +'</option>');
+            });
+        }
+    });
+});
+
+</script>
+{% endblock %}

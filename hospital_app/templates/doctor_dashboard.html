@@ -1,0 +1,142 @@
+{% extends "dashboard_base.html" %}
+{% block page_title %}Welcome: Dr. {{ user.first_name }}{% endblock %}
+
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            My Account
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Appointments
+        </a>
+    </li>
+    
+{% endblock %}
+
+{% block dashboard_content %}
+    <ul class="nav nav-tabs" id="notificationTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="patients-tab" data-bs-toggle="tab" data-bs-target="#patients" type="button" role="tab" aria-controls="patients" aria-selected="true">Patients Waiting</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="appointments-tab" data-bs-toggle="tab" data-bs-target="#appointments" type="button" role="tab" aria-controls="appointments" aria-selected="false">Patient's in my Ward</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="lab-tab" data-bs-toggle="tab" data-bs-target="#lab" type="button" role="tab" aria-controls="lab" aria-selected="false">My Lab Requests</button>
+        </li>
+    </ul>
+    
+    <div class="tab-content mt-3" id="notificationTabsContent">
+        <div class="tab-pane fade show active" id="patients" role="tabpanel" aria-labelledby="patients-tab">
+            <div class="card shadow-sm">
+                <div class="list-group list-group-flush">
+                    {% if my_visits %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Full Name</th>
+                                <th>Urgency</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visit in my_visits %}
+                            <tr>
+                                <td>{{ visit.patient.record_no}}</td>
+                                <td>{{ visit.patient.first_name }} {{ visit.patient.middle_name }} {{ visit.patient.last_name }}</td>
+                                <td>{{ visit.get_urgency_display  }}</td>
+                                <td>{{ visit.get_status_display }}</td>
+                                <td>
+                                    <a href="{% url 'doctor_detail' visit.patient.id visit.id %}" 
+                                   class="btn btn-info">View Details</a>
+                                </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                        <div class="list-group-item text-center text-muted">
+                            No patients found Waiting for you.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
+            <div class="card shadow-sm">
+                <div class="list-group list-group-flush">
+                    {% if visits %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Full Name</th>
+                                <th>Urgency</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visit in visits %}
+                            <tr>
+                                <td>{{ visit.patient.record_no}}</td>
+                                <td>{{ visit.patient.first_name }} {{ visit.patient.middle_name }} {{ visit.patient.last_name }}</td>
+                                <td>{{ visit.get_urgency_display  }}</td>
+                                <td>{{ visit.get_status_display }}</td>
+                                <td>
+                                    <a href="{% url 'doctor_detail' visit.patient.id visit.id %}" 
+                                   class="btn btn-info">View Details</a>
+                                </td>
+                            </tr>
+                            
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                                <div class="list-group-item text-center text-muted">
+                                    No patients in your ward.
+                                </div>
+                    {% endif %}
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="lab" role="tabpanel" aria-labelledby="lab-tab">
+            <div class="card shadow-sm">
+                {% if lab_requests %}
+                <div class="list-group list-group-flush">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Patient Full Name</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visit in lab_requests %}
+                            <tr>
+                                <td>{{ visit.visit.patient.name }}</td>
+                                <td>{{ visit.get_status_display }}</td>
+                                <td>
+                                    <a href="{% url 'review_lab_results' visit.visit.id %}" 
+                                   class="btn btn-info">View Details</a>
+                                </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+
+    </div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "dashboard_base.html" %}
+{% block page_title %}Welcome {{ user.first_name }}{% endblock %}
+
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Patient Vitals
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Medication Schedule
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Ward Management
+        </a>
+    </li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-12">
+        <h4>Patients Awaiting Triage</h4>
+
+        {% if queued_patients %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-info">
+                    <tr>
+                        <th>fisrt name</th>
+                        <th>middle name</th>
+                        <th>last name</th>
+                        <th>Status</th>
+                        <th>actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for triage in queued_patients %}
+                <tr>
+                    <td>{{ triage.visit.patient.first_name }}</td>
+                    <td>{{ triage.visit.patient.middle_name }}</td>
+                    <td>{{ triage.visit.patient.last_name }}</td>
+                    <td>{{ triage.status }}</td>
+                    <td>
+                        <a class="badge bg-info" href="{% url 'fill_triage' triage.id %}">Fill Triage</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                    <!-- Add more rows -->
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-gray-500 mt-3">No patients waiting for triage.</p>
+        {% endif %}
+
+    <h4>Patients Awaiting for Ward Assignment</h4>
+    {% if patients_to_ward %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-info">
+                   <tr>
+                    <th>fisrt name</th>
+                    <th>middle name</th>
+                    <th>last name</th>
+                    <th>actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for triage in patients_to_ward %}
+                <tr>
+                    <td>{{ triage.visit.patient.first_name }}</td>
+                    <td>{{ triage.visit.patient.middle_name }}</td>
+                    <td>{{ triage.visit.patient.last_name }}</td>
+                    <td>
+                        <a class="badge bg-info" href="{% url 'assign_to_ward' triage.visit.id %}">Assign to Ward</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p>No patients waiting.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

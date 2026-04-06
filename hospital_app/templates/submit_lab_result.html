@@ -1,0 +1,55 @@
+{% extends "dashboard_base.html" %}
+{% block page_title %}Submit Lab Results{% endblock %}
+
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Test Orders
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Results Pending
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Equipment Status
+        </a>
+    </li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container mt-4">
+<div >
+    <form method="POST">
+    {% csrf_token %}
+    <div class="mb-5">
+        <div class="row g-3">
+            {% if lab_request.tests.all %}
+                {% for test in lab_request.tests.all %}
+                    <div class="col-md-4">
+                        {% if test.parameters.all %}
+                            {% for param in test.parameters.all %}
+                                <div class="form-group">
+                                    <label>{{ param.name }}</label>
+                                    <input type="text" class="form-control" name="test_{{ test.id }}_param_{{ param.id }}" placeholder="Enter value">
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No parameters found for this test.</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No tests available.</p>
+            {% endif %}
+
+        </div>
+        <hr>
+        <button type="submit" class="btn btn-info">Submit Results</button>
+    </div>
+</form>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "dashboard_base.html" %}
+{% block page_title %}Welcome: {{ user.first_name }}{% endblock %}
+
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Pending Prescriptions
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Inventory
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Dispensing History
+        </a>
+    </li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-12">
+        <h4>Pending Prescriptions</h4>
+        {% if prescriptions %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-warning">
+                    <tr>
+                        <th >Patient</th>
+                        <th >Prescribed By</th>
+                        <th >Payed</th>
+                        <th >Date</th>
+                        <th >Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                     {% for prescription in prescriptions %}
+                        <tr class="text-center">
+                            <td >{{ prescription.visit.patient }}</td>
+                            <td >{{ prescription.prescribed_by }}</td>
+                            <td >
+                                {% if prescription.is_payed %}
+                                    <span >&#10004;</span> 
+                                {% else %}
+                                    <span >&#10060;</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ prescription.date_prescribed|date:"Y-m-d" }}</td>
+                            <td >
+                                <a href="{% url 'prescription_detail' prescription.id %}">View Details</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No Prescription waiting.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <h4>Inventory Status</h4>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Medication</th>
+                        <th>Stock</th>
+                        <th>Last Restock</th>
+                        <th>Expiry Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Paracetamol 500mg</td>
+                        <td class="text-success">1,234</td>
+                        <td>2023-08-01</td>
+                        <td>2025-03-01</td>
+                    </tr>
+                    <!-- Add more rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

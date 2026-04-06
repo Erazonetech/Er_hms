@@ -1,0 +1,28 @@
+{% extends "dashboard_base.html" %}
+{% block page_title %}Notifications{% endblock %}
+
+
+{% block dashboard_content %}  
+    <div class="card shadow-sm">
+        <div class="list-group list-group-flush">
+            {% for notification in notifications %}
+                <div class="list-group-item d-flex align-items-center">
+                    <div class="me-3 text-secondary">
+                        <i class="bi bi-bell fs-4"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <p class="mb-1 fw-medium text-truncate">{{ notification.message }}</p>
+                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                    </div>
+                    {% if not notification.is_read %}
+                        <span class="badge bg-primary">New</span>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div class="list-group-item text-center text-muted">
+                    No notifications found.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,137 @@
+
+{% extends "dashboard_base.html" %}
+{% block page_title %}Diagnosis & Treatment{% endblock %}
+
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            My Account
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Appointments
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'notifications' %}">
+            Notifications
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Logout
+        </a>
+    </li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="card shadow mt-5">
+    <form method="POST">
+        {% csrf_token %}
+        <!-- Patient Information -->
+        <div class="bg-light p-4 rounded mb-5">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">Chief Complaints</label>
+                            {{ form.chief_complaint }}
+                            {% if form.chief_complaint.errors %}
+                            <div class="invalid-feedback d-block">
+                            {{ form.chief_complaint.errors.as_text }}
+                            </div>
+                            {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">History of Present Illness</label>
+                            {{ form.history_of_present_illness }}
+                            {% if form.history_of_present_illness.errors %}
+                            <div class="invalid-feedback d-block">
+                            {{ form.history_of_present_illness.errors.as_text }}
+                            </div>
+                            {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">physical_examination</label>
+                            {{ form.physical_examination }}
+                            {% if form.physical_examination.errors %}
+                            <div class="invalid-feedback d-block">
+                            {{ form.physical_examination.errors.as_text }}
+                            </div>
+                            {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">investigations</label>
+                            {{ form.investigations }}
+                            {% if form.investigations.errors %}
+                            <div class="invalid-feedback d-block">
+                            {{ form.investigations.errors.as_text }}
+                            </div>
+                            {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">management_plan</label>
+                            {{ form.management_plan }}
+                            {% if form.management_plan.errors %}
+                            <div class="invalid-feedback d-block">
+                            {{ form.management_plan.errors.as_text }}
+                            </div>
+                            {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">clinical_diagnosis</label>
+                            {{ form.clinical_diagnosis }}
+                            {% if form.clinical_diagnosis.errors %}
+                            <div class="invalid-feedback d-block">
+                            {{ form.clinical_diagnosis.errors.as_text }}
+                            </div>
+                            {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">treatment_plan</label>
+                            {{ form.treatment_plan }}
+                            {% if form.treatment_plan.errors %}
+                            <div class="invalid-feedback d-block">
+                            {{ form.treatment_plan.errors.as_text }}
+                            </div>
+                            {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">advice</label>
+                            {{ form.advice }}
+                            {% if form.advice.errors %}
+                            <div class="invalid-feedback d-block">
+                            {{ form.advice.errors.as_text }}
+                            </div>
+                            {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "dashboard_base.html" %}
+{% block page_title %}Fill Triage of {{ visit.patient.name }}{% endblock %}
+
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Patient Vitals
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Medication Schedule
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Ward Management
+        </a>
+    </li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container mt-4">
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- First Row: Blood Pressure, Pulse Rate, Respiratory Rate -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="blood_pressure" class="form-label">Blood Pressure</label>
+                <input type="text" class="form-control {% if form.blood_pressure.errors %}is-invalid{% endif %}" id="blood_pressure" name="blood_pressure" value="{{ form.blood_pressure.value }}">
+                {% for error in form.blood_pressure.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="pulse_rate" class="form-label">Pulse Rate</label>
+                <input type="text" class="form-control {% if form.pulse_rate.errors %}is-invalid{% endif %}" id="pulse_rate" name="pulse_rate" value="{{ form.pulse_rate.value }}">
+                {% for error in form.pulse_rate.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="respiratory_rate" class="form-label">Respiratory Rate</label>
+                <input type="text" class="form-control {% if form.respiratory_rate.errors %}is-invalid{% endif %}" id="respiratory_rate" name="respiratory_rate" value="{{ form.respiratory_rate.value }}">
+                {% for error in form.respiratory_rate.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Second Row: Temperature, Weight, Height -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="temperature" class="form-label">Temperature (°C)</label>
+                <input type="text" class="form-control {% if form.temperature.errors %}is-invalid{% endif %}" id="temperature" name="temperature" value="{{ form.temperature.value }}">
+                {% for error in form.temperature.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="weight" class="form-label">Weight (kg)</label>
+                <input type="text" class="form-control {% if form.weight.errors %}is-invalid{% endif %}" id="weight" name="weight" value="{{ form.weight.value }}">
+                {% for error in form.weight.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="height" class="form-label">Height (cm)</label>
+                <input type="text" class="form-control {% if form.height.errors %}is-invalid{% endif %}" id="height" name="height" value="{{ form.height.value }}">
+                {% for error in form.height.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Third Row: Oxygen Saturation -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="oxygen_saturation" class="form-label">Oxygen Saturation (%)</label>
+                <input type="text" class="form-control {% if form.oxygen_saturation.errors %}is-invalid{% endif %}" id="oxygen_saturation" name="oxygen_saturation" value="{{ form.oxygen_saturation.value }}">
+                {% for error in form.oxygen_saturation.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

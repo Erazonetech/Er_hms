@@ -1,0 +1,97 @@
+{% extends "dashboard_base.html" %}
+{% block page_title %}System Examination {{ visit.patient.name }}{% endblock %}
+{% load custom_tags %}
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            My Account
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Appointments
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'notifications' %}">
+            Notifications
+        </a>
+    </li>
+{% endblock %}
+{% block dashboard_content %}
+<div class="container">
+    
+    <form method="post" class="bg-white p-4 rounded shadow-sm">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+                <label for="id_heent" class="form-label">HEENT</label>
+                {{ form.heent }}
+                {% for error in form.heent.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-md-6">
+                <label for="id_lungs" class="form-label">Lungs</label>
+                {{ form.lungs }}
+                {% for error in form.lungs.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="id_cardiovascular" class="form-label">Cardiovascular</label>
+                {{ form.cardiovascular }}
+                {% for error in form.cardiovascular.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-md-6">
+                <label for="id_gastrointestinal" class="form-label">Gastrointestinal</label>
+                {{ form.gastrointestinal }}
+                {% for error in form.gastrointestinal.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="id_genitourinary" class="form-label">Genitourinary</label>
+                {{ form.genitourinary }}
+                {% for error in form.genitourinary.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-md-6">
+                <label for="id_musculoskeletal" class="form-label">Musculoskeletal</label>
+                {{ form.musculoskeletal }}
+                {% for error in form.musculoskeletal.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <label for="id_neurological" class="form-label">Neurological</label>
+                {{ form.neurological }}
+                {% for error in form.neurological.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="col-md-6">
+                <br />
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}Update{% else %}Save{% endif %}
+                </button>
+                <a href="{% url 'doctor_dashboard' %}" class="btn btn-secondary ms-2">
+                    Cancel
+                </a>
+            </div>
+            
+        </div>
+    </form>
+</div>
+{% endblock %}

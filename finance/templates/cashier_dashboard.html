@@ -1,0 +1,62 @@
+{% extends "dashboard_base.html" %}
+{% block page_title %}Welcome {{ user.first_name }}{% endblock %}
+
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Processed Payments
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Finance
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Cash Management
+        </a>
+    </li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-12">
+        <h4>Pending Payments</h4>
+
+        {% if pending_payments %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-info">
+                    <tr>
+                        <th>Name</th>
+                        <th>Service Type</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in pending_payments %}
+                    <tr >
+                        <td>{{ payment.visitor.patient.name }}</td>
+                        <td>{{ payment.service.name }}</td>
+                        <td>{{ payment.amount }} Birr</td>
+                        <td class="text-warning">Pending</td>
+                        <td>
+                            <form method="POST" action="{% url 'process_payment' payment.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-info">Complete Payment</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Add more rows -->
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p>No Pending Payment.</p>
+        {% endif %}
+
+{% endblock %}

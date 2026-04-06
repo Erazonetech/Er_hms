@@ -1,0 +1,83 @@
+
+{% extends "dashboard_base.html" %}
+{% block page_title %}Prescribe Medication for {{ visit.patient.name }}{% endblock %}
+
+{% block sidebar_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            My Account
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">
+            Appointments
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'notifications' %}">
+            Notifications
+        </a>
+    </li>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container mt-4">    
+    <form method="POST" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <div id="prescription-items">
+            <div class="row mb-2">
+                <div class="col-md-4"><label class="form-label">Drug</label></div>
+                <div class="col-md-4"><label class="form-label">Dosage</label></div>
+                <div class="col-md-4"><label class="form-label">Quantity</label></div>
+            </div>
+
+            <div class="row mb-3 prescription-item">
+                <div class="col-md-4">
+                    <select name="drugs" class="form-select" required>
+                        <option value="" disabled selected>Select a drug</option>
+                        {% for drug in drugs %}
+                            <option value="{{ drug.id }}">{{ drug.name }} ({{ drug.price_per_unit }} per unit)</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">Please select a drug.</div>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="dosages" class="form-control" placeholder="e.g., 1 tablet twice a day" required>
+                    <div class="invalid-feedback">Please enter the dosage.</div>
+                </div>
+                <div class="col-md-4">
+                    <input type="number" name="quantities" class="form-control" min="1" value="1" required>
+                    <div class="invalid-feedback">Please enter a valid quantity.</div>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" id="add-drug" class="btn btn-secondary mb-3">+ Add Another</button>
+        <hr>
+        <button type="submit" class="btn btn-success">Prescribe</button>
+    </form>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+
+    document.getElementById('add-drug').addEventListener('click', function() {
+        let container = document.getElementById('prescription-items');
+        let newItem = container.querySelector('.prescription-item').cloneNode(true);
+        container.appendChild(newItem);
+    });
+</script>
+{% endblock %}

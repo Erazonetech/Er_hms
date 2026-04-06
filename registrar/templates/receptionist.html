@@ -1,0 +1,81 @@
+{% extends "dashboard_base.html" %}
+{% load i18n %}
+{% load custom_tags %}
+{% block page_title %}Welcome: {{ user.first_name }}{% endblock %}
+
+{% block sidebar_items %}
+    
+{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- Action Panel and Search Form in a Single Row -->
+<nav class="bg-success text-white p-4 rounded-lg mb-4 shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
+        <!-- Action Panel (Buttons) -->
+        <div class="d-flex gap-3">
+            <a href="{% url 'add_patient' %}" class="btn btn-outline-light">+New</a>
+            <a href="" class="btn btn-outline-light">+ Appointment</a>
+        </div>
+
+        <!-- Search Form -->
+        <form method="GET" class="d-flex align-items-center gap-3">
+            <!-- Search Input -->
+            <input class="form-control me-2" type="text" name="search" placeholder="Search patient..." value="{{ search_query }}">
+
+            <!-- Organization Select -->
+            <select class="form-control me-4" name="organization">
+                <option value="">All Organizations</option>
+                {% for org in organizations %}
+                    <option value="{{ org.id }}" {% if selected_org == org.id|stringformat:"s" %}selected{% endif %}>
+                        {{ org.name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Submit Button -->
+            <button class="btn btn-outline-light" type="submit">Search</button>
+        </form>
+    </div>
+</nav>
+
+
+{% if appointments %}
+<h5>Today's Appointments</h5>
+<div class="row">
+    <div class="col-12">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Age</th>
+                        <th>Appointed by</th>
+                        <th>Status</th>
+                        <th colspan="3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                    <tr>
+                        <td>{{ appointment.patient.name }}</td>
+                        <td>{{ appointment.patient.phone }}</td>
+                        <td>{{ appointment.patient.age }}</td>
+                        <td>{{ appointment.appointed_by.get_ful_name }}</td>
+                        <td>{% if appointment.is_seen %}Yes{% else %}No{% endif %}</td>
+                        <td>
+                            <a class="badge bg-warning" href="{% url 'edit_patient' appointment.patient.id %}">Edit</a> </td> 
+                            <td> <a class="badge bg-success" href="{% url 'add_visit' appointment.patient.id %}">Check in</a> </td> 
+                           <td> <a class="badge bg-info" href="{% url 'view_patient' appointment.patient.id %}">View Info</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

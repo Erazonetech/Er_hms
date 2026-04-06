@@ -1,0 +1,94 @@
+{% extends "generic_base.html" %}
+{% load django_bootstrap5 %}
+{% load i18n %}
+{% block content %}
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'dashboard' %}">
+                            {% trans "HMS" %}
+                        </a>
+                    </li>
+                    {% block sidebar_items %}
+                    {% endblock %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'list_appointment' %}">
+                            Appointments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'notifications' %}">
+                            Notifications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            Logout
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <form action="{% url 'change_language' %}" method="get">
+                                        <select name="lang" onchange="this.form.submit()" class="nav-link">
+                                            {% get_current_language as LANGUAGE_CODE %}
+                                            {% get_available_languages as LANGUAGES %}
+                                            {% get_language_info_list for LANGUAGES as languages %}
+                                            {% for language in languages %}
+                                                <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
+                                                    {{ language.name_local }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </form>
+                    </li>
+                    
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">{% block page_title %}Dashboard{% endblock %}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    {% block header_buttons %}{% endblock %}
+                </div>
+            </div>
+            
+            {% block dashboard_content %}{% endblock %}
+        </main>
+    </div>
+    <script>
+        async function fetchNotificationCount() {
+            try {
+                let response = await fetch("{% url 'notifications_count' %}"); // Replace with your actual URL
+                let data = await response.json();
+                
+                let badge = document.getElementById("notification-badge");
+                if (data.count > 0) {
+                    if (!badge) {
+                        let link = document.querySelector(".nav-link[href='{% url 'notifications' %}']");
+                        badge = document.createElement("span");
+                        badge.id = "notification-badge";
+                        badge.className = "badge bg-info ms-2";
+                        link.appendChild(badge);
+                    }
+                    badge.textContent = data.count;
+                } else if (badge) {
+                    badge.remove();
+                }
+            } catch (error) {
+                console.error("Error fetching notifications:", error);
+            }
+        }
+
+        // Fetch count every 30 seconds
+        setInterval(fetchNotificationCount, 30000);
+
+        // Run on page load
+        document.addEventListener("DOMContentLoaded", fetchNotificationCount);
+
+    </script>
+{% endblock %}

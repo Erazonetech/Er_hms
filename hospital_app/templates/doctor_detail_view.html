@@ -1,0 +1,148 @@
+{% extends "doctor_dashboard.html" %}
+{% block page_title %}Patient Details{% endblock %}
+{% load custom_tags %}
+
+
+{% block dashboard_content %}
+
+
+<div class="container mt-5">
+
+    <!-- Action Panel (Navbar) -->
+    <nav class="bg-success text-white p-4 rounded-lg mb-4 shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex gap-3">
+                <a href="{% url 'update_visit' visit_id %}" class="btn btn-outline-light">Diagnosis</a>
+                <a href="{% url 'add_system_exam' visit_id %}" class="btn btn-outline-light">System Exam</a>
+                {% if lab_requests %}
+                <a href="{% url 'edit_lab_request' lab_requests.id %}" class="btn btn-outline-light">Edit Lab Test</a>
+                <a href="{% url 'add_lab_request' visit_id %}" class="btn btn-outline-light">+Lab Test</a>
+                {% endif %}
+                {% if lab_results %}
+                <a href="{% url 'review_lab_results' visit_id %}" class="btn btn-outline-light">Review Lab Test</a>
+                {% endif %}
+                <a href="{% url 'prescribe_view' visit_id %}" class="btn btn-outline-light">+ Prescription</a>
+                <a href="{% url 'new_appointment' patient.id %}" class="btn btn-outline-light">+ Appointment</a>
+                <a href="{% url 'assign_to_ward' visit_id %}" class="btn btn-outline-light">Change ward</a>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <!-- Patient Info Tabs -->
+    <div class="bg-white p-4 rounded-lg shadow-sm">
+        <div class="tab-content" id="patientTabContent">
+            <!-- Basic Info Tab -->
+            <div class="tab-pane fade show active" id="basic-info" role="tabpanel">
+                <!-- Main Patient Info Card -->
+                <div class="container-fluid">
+                    <!-- Main Patient Info Card -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-header bg-primary text-white">
+                                    <h3 class="card-title mb-0">Patient Overview</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h5 class="text-muted">Demographics</h5>
+                                            <ul class="list-unstyled">
+                                                <li><strong>Name:</strong> {{ patient.name }}</li>
+                                                <li><strong>Gender:</strong> {{ patient.gender|default:"N/A" }}</li>
+                                                <li><strong>Age:</strong> {{ patient.age }}</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h5 class="text-muted">Contact Information</h5>
+                                            <ul class="list-unstyled">
+                                                <li><strong>Phone:</strong> {{ patient.phone|default:"N/A" }}</li>
+                                                <li><strong>Address:</strong> {{ patient.address|linebreaksbr|default:"N/A" }}</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h5 class="text-muted">Medical Identifiers</h5>
+                                            <ul class="list-unstyled">
+                                                <li><strong>Patient MRN:</strong> {{ patient.record_no }}</li>
+                                                <li><strong>National ID:</strong> {{ patient.national_id|default:"N/A" }}</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Two Column Layout -->
+                    <div class="row">
+                        <!-- Vital Information Card -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-info text-white">
+                                    <h4 class="card-title mb-0">Vital Signs <a href="{% url 'fill_triage' triage_info.id %}"><i class="bi bi-pencil-square"></i></a></h4>
+                                </div>
+                                <div class="card-body">
+                                    {% if triage_info %}
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p class="mb-1"><strong>Blood Pressure:</strong> {{ triage_info.blood_pressure }}</p>
+                                            <p class="mb-1"><strong>Pulse Rate:</strong> {{ triage_info.pulse_rate }} </p>
+                                            <p class="mb-1"><strong>Respiratory Rate:</strong> {{ triage_info.respiratory_rate }} </p>
+                                            <p class="mb-1"><strong>BMI:</strong> {{ triage_info.bmi }} </p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p class="mb-1"><strong>Oxygen Saturation:</strong> {{ triage_info.oxygen_saturation }}%</p>
+                                            <p class="mb-1"><strong>Temp:</strong> {{ triage_info.temperature }} °C</p>
+                                            <p class="mb-1"><strong>Height:</strong> {{ triage_info.height }} cm</p>
+                                            <p class="mb-1"><strong>Weight:</strong> {{ triage_info.weight }} KG</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    {% else %}
+                                    <div class="alert alert-warning mb-0">
+                                        No vital signs recorded yet
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Appointments Card -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-success text-white">
+                                    <h4 class="card-title mb-0">Medical History</h4>
+                                </div>
+                                <div class="card-body">
+                                    {% if visits %}
+                                    <div class="list-group">
+                                        {% for appointment in visits %}
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h5 class="mb-1">Dr. {{ appointment.doctor.last_name }}</h5>
+                                                <small>{{ appointment.date_time }}</small>
+                                            </div>
+                                            <p class="mb-1">
+                                                {{ appointment.date_time|date:"M d, Y H:i" }}
+                                            </p>
+                                            <small class="text-muted">Reason: {{ appointment.reason|truncatechars:40 }}</small>
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-info mb-0">
+                                        No upcoming appointments
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Medical History Card -->    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

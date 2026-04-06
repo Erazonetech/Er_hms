@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-2xl font-bold text-gray-700">Cashier Dashboard</h1>
+
+    <div class="bg-white p-4 rounded-lg shadow mt-6">
+        <h2 class="text-lg font-semibold">Pending Payments</h2>
+
+        {% if pending_payments %}
+            <table class="w-full mt-3 border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border p-2">Patient</th>
+                        <th class="border p-2">Service</th>
+                        <th class="border p-2">Amount</th>
+                        <th class="border p-2">Status</th>
+                        <th class="border p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in pending_payments %}
+                    <tr class="text-center">
+                        <td class="border p-2">{{ payment.patient.first_name }} {{ payment.patient.last_name }}</td>
+                        <td class="border p-2">{{ payment.service.name }}</td>
+                        <td class="border p-2">{{ payment.amount }} Birr</td>
+                        <td class="border p-2 text-red-500">Pending</td>
+                        <td class="border p-2">
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="payment_id" value="{{ payment.id }}">
+                                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">
+                                    Mark as Paid
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-gray-500 mt-3">No pending payments.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
