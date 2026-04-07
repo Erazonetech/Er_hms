@@ -17,14 +17,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "django_bootstrap5",
+    "tailwind",
+    'theme',
     'channels',
     'hospital_app',
     'registrar',
     'accounts',
     'finance',
 ]
+if DEBUG:
+    # Add django_browser_reload only in DEBUG mode
+    INSTALLED_APPS += ["django_browser_reload"]
 
+TAILWIND_APP_NAME = "theme"
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -36,6 +41,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'hospital_management.urls'
+
+if DEBUG:
+    # Add django_browser_reload middleware only in DEBUG mode
+    MIDDLEWARE += [
+        "django_browser_reload.middleware.BrowserReloadMiddleware",
+    ]
 
 TEMPLATES = [
     {
@@ -95,7 +106,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+# NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
 
 CHANNEL_LAYERS = {
     'default': {
