@@ -5,6 +5,8 @@ urlpatterns = [
     # Prescription URLs
    path('triage/', views.triage_dashboard, name='triage'),
    path('doctor/', views.doctor_dashboard, name='doctor_dashboard'),
+   path('doctor/appointments/', views.doctor_appointments, name='doctor_appointments'),
+   path('doctor/new_appointment/<int:patient_id>/<int:visit_id>/', views.add_new_appointment_doctor, name='doctor_new_appointment'),
    path('doctor_detail/<int:patient_id>/<int:visit_id>', views.doctor_detail, name='doctor_detail'),
    path('add_lab_request/<int:visit_id>', views.add_lab_test_request, name='add_lab_request'),
    path('edit_lab_request/<int:pk>', views.edit_lab_test_request, name='edit_lab_request'),
@@ -20,5 +22,8 @@ urlpatterns = [
    path('pharmacist/', views.prescription_queue_list, name='pharmacist_dashboard'),
    path('dispense/<int:prescription_id>', views.dispense_view, name='dispense_view'),
    path('prescription_detail_view/<int:prescription_id>', views.prescription_detail_view, name='prescription_detail'),
+   path('api/doctor/patients-waiting/', views.get_patients_waiting, name='doctor_waiting_patients'),
+   path('api/doctor/patients-in-ward/', views.get_patients_waiting_in_ward, name='doctor_waiting_patients_in_ward'),
+   path('api/doctor/patients-lab-request/', views.get_patients_lab_request, name='doctor_patients_lab_request'),
 ]
 

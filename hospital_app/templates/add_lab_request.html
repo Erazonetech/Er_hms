@@ -1,19 +1,6 @@
 
-{% extends "dashboard_base.html" %}
+{% extends "doctor_dashboard.html" %}
 {% block page_title %}Welcome: Dr. {{ user.first_name }}{% endblock %}
-
-{% block sidebar_items %}
-    <li class="nav-item">
-        <a class="nav-link" href="#">
-            My Account
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#">
-            Appointments
-        </a>
-    </li>
-{% endblock %}
 
 {% block dashboard_content %}
 <div class="container mt-4">

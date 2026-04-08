@@ -1,83 +1,510 @@
-
-{% extends "dashboard_base.html" %}
+{% extends "doctor_dashboard.html" %}
 {% block page_title %}Prescribe Medication for {{ visit.patient.name }}{% endblock %}
 
-{% block sidebar_items %}
-    <li class="nav-item">
-        <a class="nav-link" href="#">
-            My Account
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#">
-            Appointments
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'notifications' %}">
-            Notifications
-        </a>
-    </li>
-{% endblock %}
-
 {% block dashboard_content %}
-<div class="container mt-4">    
-    <form method="POST" class="needs-validation" novalidate>
-        {% csrf_token %}
-        
-        <div id="prescription-items">
-            <div class="row mb-2">
-                <div class="col-md-4"><label class="form-label">Drug</label></div>
-                <div class="col-md-4"><label class="form-label">Dosage</label></div>
-                <div class="col-md-4"><label class="form-label">Quantity</label></div>
-            </div>
-
-            <div class="row mb-3 prescription-item">
-                <div class="col-md-4">
-                    <select name="drugs" class="form-select" required>
-                        <option value="" disabled selected>Select a drug</option>
-                        {% for drug in drugs %}
-                            <option value="{{ drug.id }}">{{ drug.name }} ({{ drug.price_per_unit }} per unit)</option>
-                        {% endfor %}
-                    </select>
-                    <div class="invalid-feedback">Please select a drug.</div>
-                </div>
-                <div class="col-md-4">
-                    <input type="text" name="dosages" class="form-control" placeholder="e.g., 1 tablet twice a day" required>
-                    <div class="invalid-feedback">Please enter the dosage.</div>
-                </div>
-                <div class="col-md-4">
-                    <input type="number" name="quantities" class="form-control" min="1" value="1" required>
-                    <div class="invalid-feedback">Please enter a valid quantity.</div>
-                </div>
+<div class="space-y-6">
+    <!-- Action Panel (Navbar) -->
+    <div class="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-4">
+            <div class="flex flex-wrap gap-3">
+                <a href="{% url 'update_visit' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Diagnosis
+                </a>
+                <a href="{% url 'add_system_exam' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    System Exam
+                </a>
+                {% if lab_requests %}
+                <a href="{% url 'edit_lab_request' lab_requests.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit Lab Test
+                </a>
+                <a href="{% url 'add_lab_request' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    + Lab Test
+                </a>
+                {% endif %}
+                {% if lab_results %}
+                <a href="{% url 'review_lab_results' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Review Lab Test
+                </a>
+                {% endif %}
+                <a href="{% url 'prescribe_view' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    + Prescription
+                </a>
+                <a href="{% url 'doctor_new_appointment' visit.patient.id visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    + Appointment
+                </a>
+                <a href="{% url 'assign_to_ward' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    Change Ward
+                </a>
             </div>
         </div>
+    </div>
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 md:px-8 py-6">
+            <h1 class="text-xl md:text-2xl font-bold text-white mb-2">Prescribe Medication</h1>
+            <p class="text-indigo-100 text-sm md:text-base">Patient: {{ visit.patient.name }}</p>
+        </div>
+    </div>
 
-        <button type="button" id="add-drug" class="btn btn-secondary mb-3">+ Add Another</button>
-        <hr>
-        <button type="submit" class="btn btn-success">Prescribe</button>
-    </form>
+    <!-- Form Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 overflow-hidden">
+        <form method="POST" class="p-4 md:p-8" id="prescriptionForm" novalidate>
+            {% csrf_token %}
+            
+            <!-- Prescription Items Container -->
+            <div id="prescription-items" class="space-y-6">
+                <!-- Header Row - Hidden on mobile, visible on desktop -->
+                <div class="hidden md:grid md:grid-cols-3 gap-4 mb-2">
+                    <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">Drug</div>
+                    <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">Dosage</div>
+                    <div class="text-sm font-semibold text-gray-700 dark:text-gray-300">Quantity</div>
+                </div>
+
+                <!-- Prescription Item Template -->
+                <div class="prescription-item border border-gray-200 dark:border-gray-700 rounded-xl p-4 md:p-0 md:border-0 transition-all duration-200 hover:shadow-md md:hover:shadow-none">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- Drug Selection -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 md:hidden">
+                                Drug <span class="text-red-500">*</span>
+                            </label>
+                            <select name="drugs" class="drug-select w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" required>
+                                <option value="" disabled selected>Select a medication</option>
+                                {% for drug in drugs %}
+                                    <option value="{{ drug.id }}" data-price="{{ drug.price_per_unit }}">
+                                        {{ drug.name }} - {{ drug.price_per_unit }} per unit
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback text-sm text-red-600 dark:text-red-400 hidden">Please select a medication.</div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Select the medication to prescribe</p>
+                        </div>
+                        
+                        <!-- Dosage -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 md:hidden">
+                                Dosage <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="dosages" class="dosage-input w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" 
+                                   placeholder="e.g., 1 tablet twice a day" required>
+                            <div class="invalid-feedback text-sm text-red-600 dark:text-red-400 hidden">Please enter the dosage instructions.</div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Frequency and administration instructions</p>
+                        </div>
+                        
+                        <!-- Quantity -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 md:hidden">
+                                Quantity <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" name="quantities" class="quantity-input w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" 
+                                       min="1" value="1" required>
+                                <button type="button" class="remove-drug p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors md:hidden">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback text-sm text-red-600 dark:text-red-400 hidden">Please enter a valid quantity (minimum 1).</div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Number of units/pills to dispense</p>
+                        </div>
+                        
+                        <!-- Remove button for desktop -->
+                        <div class="hidden md:flex items-center justify-end">
+                            <button type="button" class="remove-drug text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                <span class="text-xs ml-1">Remove</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Drug Button -->
+            <div class="mt-6">
+                <button type="button" id="add-drug" 
+                        class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all duration-200">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Another Medication
+                </button>
+            </div>
+
+            <!-- Prescription Summary Card -->
+            <div class="mt-8 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Prescription Summary</h4>
+                        <p class="text-xs text-gray-600 dark:text-gray-400" id="prescription-summary">
+                            No medications added yet
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
+                <button type="submit" 
+                        class="inline-flex items-center justify-center px-6 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-md">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Prescribe Medications
+                </button>
+                
+                <a href="{% url 'doctor_dashboard' %}" 
+                   class="inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all duration-200">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tips Card -->
+    <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+        <div class="flex items-start space-x-3">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">Prescribing Guidelines</h4>
+                <p class="text-xs text-blue-700 dark:text-blue-400">
+                    Include clear dosage instructions, duration of treatment, and any special instructions for the patient. 
+                    Always consider drug interactions and patient allergies before prescribing.
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script>
-    (function() {
-        'use strict';
-        var forms = document.querySelectorAll('.needs-validation');
-        Array.prototype.slice.call(forms).forEach(function(form) {
-            form.addEventListener('submit', function(event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
-        });
-    })();
+<style>
+    /* Form field styling */
+    .drug-select, .dosage-input, .quantity-input {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .drug-select:focus, .dosage-input:focus, .quantity-input:focus {
+        outline: none;
+        ring: 2px solid #4f46e5;
+        border-color: transparent;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    
+    /* Animation for new items */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .prescription-item-new {
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    /* Remove button hover effect */
+    .remove-drug {
+        transition: all 0.2s ease;
+    }
+    
+    .remove-drug:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Loading animation */
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+</style>
 
-    document.getElementById('add-drug').addEventListener('click', function() {
-        let container = document.getElementById('prescription-items');
-        let newItem = container.querySelector('.prescription-item').cloneNode(true);
-        container.appendChild(newItem);
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('prescription-items');
+        const addButton = document.getElementById('add-drug');
+        const form = document.getElementById('prescriptionForm');
+        const summaryElement = document.getElementById('prescription-summary');
+        
+        // Function to update prescription summary
+        function updateSummary() {
+            const items = document.querySelectorAll('.prescription-item');
+            const medications = [];
+            
+            items.forEach((item, index) => {
+                const drugSelect = item.querySelector('.drug-select');
+                const dosageInput = item.querySelector('.dosage-input');
+                const quantityInput = item.querySelector('.quantity-input');
+                
+                if (drugSelect && drugSelect.value && dosageInput && dosageInput.value) {
+                    const drugName = drugSelect.options[drugSelect.selectedIndex]?.text.split(' - ')[0] || 'Unknown';
+                    const dosage = dosageInput.value;
+                    const quantity = quantityInput.value;
+                    medications.push(`${drugName}: ${dosage} (Qty: ${quantity})`);
+                }
+            });
+            
+            if (medications.length > 0) {
+                summaryElement.innerHTML = medications.join('<br>');
+                summaryElement.classList.remove('text-gray-500');
+            } else {
+                summaryElement.innerHTML = 'No medications added yet';
+                summaryElement.classList.add('text-gray-500');
+            }
+        }
+        
+        // Function to add event listeners to a prescription item
+        function addEventListenersToItem(item) {
+            const drugSelect = item.querySelector('.drug-select');
+            const dosageInput = item.querySelector('.dosage-input');
+            const quantityInput = item.querySelector('.quantity-input');
+            const removeBtn = item.querySelector('.remove-drug');
+            
+            if (drugSelect) {
+                drugSelect.addEventListener('change', updateSummary);
+                drugSelect.addEventListener('change', function() {
+                    validateField(this);
+                });
+            }
+            if (dosageInput) {
+                dosageInput.addEventListener('input', updateSummary);
+                dosageInput.addEventListener('input', function() {
+                    validateField(this);
+                });
+            }
+            if (quantityInput) {
+                quantityInput.addEventListener('input', updateSummary);
+                quantityInput.addEventListener('input', function() {
+                    validateField(this);
+                });
+            }
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function() {
+                    if (document.querySelectorAll('.prescription-item').length > 1) {
+                        item.remove();
+                        updateSummary();
+                        reindexItems();
+                    } else {
+                        showToast('At least one medication is required', 'warning');
+                    }
+                });
+            }
+        }
+        
+        // Function to validate individual field
+        function validateField(field) {
+            const errorDiv = field.closest('.space-y-2')?.querySelector('.invalid-feedback');
+            if (field.value.trim()) {
+                field.classList.remove('border-red-500', 'dark:border-red-500');
+                if (errorDiv) errorDiv.classList.add('hidden');
+                return true;
+            } else {
+                field.classList.add('border-red-500', 'dark:border-red-500');
+                if (errorDiv) errorDiv.classList.remove('hidden');
+                return false;
+            }
+        }
+        
+        // Function to reindex items (for any future needs)
+        function reindexItems() {
+            const items = document.querySelectorAll('.prescription-item');
+            items.forEach((item, index) => {
+                // Update any indexes if needed
+                const drugSelect = item.querySelector('.drug-select');
+                const dosageInput = item.querySelector('.dosage-input');
+                const quantityInput = item.querySelector('.quantity-input');
+                
+                if (drugSelect) drugSelect.name = 'drugs';
+                if (dosageInput) dosageInput.name = 'dosages';
+                if (quantityInput) quantityInput.name = 'quantities';
+            });
+        }
+        
+        // Function to create a new prescription item
+        function createNewPrescriptionItem() {
+            const template = document.querySelector('.prescription-item');
+            const newItem = template.cloneNode(true);
+            
+            // Clear values in the new item
+            newItem.querySelectorAll('.drug-select').forEach(select => select.value = '');
+            newItem.querySelectorAll('.dosage-input').forEach(input => input.value = '');
+            newItem.querySelectorAll('.quantity-input').forEach(input => input.value = '1');
+            
+            // Remove error styling
+            newItem.querySelectorAll('.border-red-500').forEach(field => {
+                field.classList.remove('border-red-500', 'dark:border-red-500');
+            });
+            newItem.querySelectorAll('.invalid-feedback').forEach(error => {
+                error.classList.add('hidden');
+            });
+            
+            // Add animation class
+            newItem.classList.add('prescription-item-new');
+            setTimeout(() => {
+                newItem.classList.remove('prescription-item-new');
+            }, 300);
+            
+            return newItem;
+        }
+        
+        // Add new drug button click handler
+        addButton.addEventListener('click', function() {
+            const newItem = createNewPrescriptionItem();
+            container.appendChild(newItem);
+            addEventListenersToItem(newItem);
+            updateSummary();
+            
+            // Scroll to new item
+            newItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+        
+        // Initialize existing items
+        document.querySelectorAll('.prescription-item').forEach(item => {
+            addEventListenersToItem(item);
+        });
+        updateSummary();
+        
+        // Form validation before submit
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            const items = document.querySelectorAll('.prescription-item');
+            
+            items.forEach(item => {
+                const drugSelect = item.querySelector('.drug-select');
+                const dosageInput = item.querySelector('.dosage-input');
+                const quantityInput = item.querySelector('.quantity-input');
+                
+                if (!validateField(drugSelect)) isValid = false;
+                if (!validateField(dosageInput)) isValid = false;
+                if (!validateField(quantityInput)) isValid = false;
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                showToast('Please fill in all required fields for each medication', 'error');
+                return;
+            }
+            
+            // Show loading state on submit button
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Processing...';
+            submitBtn.disabled = true;
+            
+            // Re-enable after form submission (in case of error)
+            setTimeout(() => {
+                if (submitBtn.disabled) {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            }, 5000);
+        });
+        
+        // Add keyboard shortcut for adding new drug (Ctrl+Shift+A)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                e.preventDefault();
+                addButton.click();
+                showToast('New medication field added', 'info');
+            }
+        });
     });
+    
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'fixed bottom-4 right-4 z-50 space-y-2';
+            document.body.appendChild(toastContainer);
+        }
+        
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'green' : type === 'error' ? 'red' : type === 'warning' ? 'yellow' : 'blue';
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+        
+        toast.className = 'transform transition-all duration-500 translate-x-0 mb-2';
+        toast.innerHTML = `
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-4 min-w-80 border-l-4 border-${bgColor}-500 dark:border-${bgColor}-400">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 text-xl">${icon}</div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" class="ml-auto text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        ✕
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.transform = 'translateX(400px)';
+            setTimeout(() => toast.remove(), 500);
+        }, 5000);
+    }
 </script>
 {% endblock %}

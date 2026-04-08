@@ -1,20 +1,244 @@
 {% load static tailwind_tags %}
+{% load i18n %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="theme-transition">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ER-HMS{% endblock %}</title>
+    <meta name="theme-color" content="#4f46e5">
+    <title>{% block title %}ER-HMS | Emergency Room Hospital Management System{% endblock %}</title>
     {% tailwind_css %}
+    
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        /* Optional: Add some custom styles while Tailwind loads */
+        /* Theme transition styles */
+        .theme-transition {
+            transition: background-color 0.3s ease, color 0.2s ease;
+        }
+        
+        * {
+            transition-property: background-color, border-color, color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+        
+        /* Custom scrollbar for dark/light mode */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--scrollbar-thumb-hover);
+        }
+        
+        /* Loading animation */
         .loading-tailwind {
             opacity: 0;
         }
+        
+        /* Smooth theme transitions */
+        .theme-transitioning {
+            transition: all 0.3s ease-out !important;
+        }
+        
+        /* Focus visible outline */
+        :focus-visible {
+            outline: 2px solid #4f46e5;
+            outline-offset: 2px;
+            border-radius: 0.25rem;
+        }
+        
+        /* Dark mode specific overrides */
+        .dark {
+            color-scheme: dark;
+        }
+        
+        /* System preference detection */
+        @media (prefers-color-scheme: dark) {
+            .system-theme {
+                color-scheme: dark;
+            }
+        }
     </style>
+    
+    <script>
+        // Theme management
+        class ThemeManager {
+            constructor() {
+                this.theme = localStorage.getItem('theme') || 'system';
+                this.init();
+            }
+            
+            init() {
+                this.applyTheme();
+                this.watchSystemTheme();
+            }
+            
+            applyTheme() {
+                const html = document.documentElement;
+                const savedTheme = localStorage.getItem('theme');
+                
+                if (savedTheme === 'dark') {
+                    html.classList.add('dark');
+                    html.classList.remove('light');
+                    html.setAttribute('data-theme', 'dark');
+                } else if (savedTheme === 'light') {
+                    html.classList.add('light');
+                    html.classList.remove('dark');
+                    html.setAttribute('data-theme', 'light');
+                } else {
+                    // System preference
+                    html.classList.add('system-theme');
+                    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (isDark) {
+                        html.classList.add('dark');
+                        html.classList.remove('light');
+                    } else {
+                        html.classList.add('light');
+                        html.classList.remove('dark');
+                    }
+                    html.setAttribute('data-theme', 'system');
+                }
+                
+                // Update CSS variables for scrollbar
+                this.updateScrollbarColors();
+            }
+            
+            updateScrollbarColors() {
+                const isDark = document.documentElement.classList.contains('dark');
+                document.documentElement.style.setProperty('--scrollbar-track', isDark ? '#1f2937' : '#f3f4f6');
+                document.documentElement.style.setProperty('--scrollbar-thumb', isDark ? '#4b5563' : '#9ca3af');
+                document.documentElement.style.setProperty('--scrollbar-thumb-hover', isDark ? '#6b7280' : '#6b7280');
+            }
+            
+            watchSystemTheme() {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                    const savedTheme = localStorage.getItem('theme');
+                    if (savedTheme === 'system' || !savedTheme) {
+                        this.applyTheme();
+                    }
+                });
+            }
+            
+            setTheme(theme) {
+                this.theme = theme;
+                localStorage.setItem('theme', theme);
+                this.applyTheme();
+                
+                // Dispatch custom event for other components
+                window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
+            }
+            
+            getCurrentTheme() {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme && savedTheme !== 'system') {
+                    return savedTheme;
+                }
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+        }
+        
+        // Initialize theme manager
+        const themeManager = new ThemeManager();
+        
+        // Language management
+        function changeLanguage(langCode) {
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = '{% url "set_language" %}';
+            
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = '{{ csrf_token }}';
+            form.appendChild(csrfInput);
+            
+            const langInput = document.createElement('input');
+            langInput.type = 'hidden';
+            langInput.name = 'language';
+            langInput.value = langCode;
+            form.appendChild(langInput);
+            
+            const nextInput = document.createElement('input');
+            nextInput.type = 'hidden';
+            nextInput.name = 'next';
+            nextInput.value = window.location.pathname;
+            form.appendChild(nextInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+        
+        // Add transition class for smooth theme changes
+        document.addEventListener('DOMContentLoaded', () => {
+            document.documentElement.classList.add('theme-transition');
+            
+            // Remove any flash of unstyled content
+            setTimeout(() => {
+                document.documentElement.style.transition = '';
+            }, 300);
+        });
+    </script>
+    
+    {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="bg-gray-50 dark:bg-gray-900 font-sans antialiased theme-transition">
     {% block content %}
     {% endblock %}
+    
+    <!-- Global notification container -->
+    <div id="global-notification" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+    
+    <script>
+        // Global notification function
+        window.showNotification = function(message, type = 'info') {
+            const container = document.getElementById('global-notification');
+            const notification = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : 
+                           type === 'error' ? 'bg-red-500' : 
+                           type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
+            
+            const icon = type === 'success' ? '✓' : 
+                        type === 'error' ? '✕' : 
+                        type === 'warning' ? '⚠' : 'ℹ';
+            
+            notification.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <span class="text-xl font-bold">${icon}</span>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+                notification.classList.add('translate-x-0');
+            }, 10);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('translate-x-0');
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        };
+    </script>
 </body>
 </html>

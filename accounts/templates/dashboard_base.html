@@ -1,94 +1,426 @@
 {% extends "generic_base.html" %}
-
 {% load i18n %}
-{% block content %}
-    <div class="row">
-        <!-- Sidebar -->
-        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-            <div class="position-sticky pt-3">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'dashboard' %}">
-                            {% trans "HMS" %}
-                        </a>
-                    </li>
-                    {% block sidebar_items %}
-                    {% endblock %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'list_appointment' %}">
-                            Appointments
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'notifications' %}">
-                            Notifications
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">
-                            Logout
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <form action="{% url 'change_language' %}" method="get">
-                                        <select name="lang" onchange="this.form.submit()" class="nav-link">
-                                            {% get_current_language as LANGUAGE_CODE %}
-                                            {% get_available_languages as LANGUAGES %}
-                                            {% get_language_info_list for LANGUAGES as languages %}
-                                            {% for language in languages %}
-                                                <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
-                                                    {{ language.name_local }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </form>
-                    </li>
-                    
-                </ul>
-            </div>
-        </nav>
 
-        <!-- Main Content -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">{% block page_title %}Dashboard{% endblock %}</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    {% block header_buttons %}{% endblock %}
+{% block title %}Dashboard - ER-HMS{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Sidebar animations and styles */
+    .sidebar-transition {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Dark mode specific styles */
+    .dark .sidebar-link {
+        color: #e5e7eb;
+    }
+    
+    .dark .sidebar-link:hover {
+        background-color: rgba(55, 65, 81, 0.5);
+    }
+    
+    /* Glass morphism effect for cards */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+    }
+    
+    .dark .glass-card {
+        background: rgba(31, 41, 55, 0.95);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="hidden md:flex md:flex-shrink-0 sidebar-transition">
+            <div class="flex flex-col w-52 bg-white dark:bg-gray-800 shadow-2xl dark:shadow-gray-900/30 border-r border-gray-200 dark:border-gray-700">
+                <!-- Logo Area -->
+                <div class="flex items-center justify-between h-20 px-6 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center space-x-3 group cursor-pointer">
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <div class="relative w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg transform transition-all duration-300 group-hover:scale-110">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                            ER-HMS
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Navigation Items -->
+                <div class="flex-1 flex flex-col overflow-y-auto">
+                    <nav class="flex-1 px-4 py-6 space-y-1">
+                        <a href="{% url 'dashboard' %}" 
+                           class="sidebar-link group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:translate-x-1">
+                            <svg class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            <span class="text-gray-700 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">{% trans "Dashboard" %}</span>
+                        </a>
+                        {% block sidebar_items %}
+                        
+                        
+                        {% endblock %}
+                        
+                        <!-- Notifications Link -->
+                        <a href="{% url 'notifications' %}" 
+                           class="sidebar-link group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:translate-x-1 relative">
+                            <svg class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            <span class="text-gray-700 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">{% trans "Notifications" %}</span>
+                            <span id="notification-badge" class="hidden ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse"></span>
+                        </a>
+                        
+                        <!-- Divider -->
+                        <div class="relative my-6">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                            </div>
+                        
+                        </div>
+                        
+                        <!-- Logout Link -->
+                        <a href="{% url 'logout' %}" 
+                           class="sidebar-link group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:translate-x-1">
+                            <svg class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            <span class="text-gray-700 dark:text-gray-200 group-hover:text-red-600 dark:group-hover:text-red-400">{% trans "Logout" %}</span>
+                        </a>
+                    </nav>
+                </div>
+                
+                <!-- User Profile Section -->
+                <div class="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="group relative">
+                        <div class="relative flex items-center space-x-3 p-3 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300">
+                            <div class="relative">
+                                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <span class="text-white text-sm font-bold">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+                                </div>
+                                <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-gray-800 animate-pulse"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ user.get_full_name }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ user.email }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            {% block dashboard_content %}{% endblock %}
-        </main>
-    </div>
-    <script>
-        async function fetchNotificationCount() {
-            try {
-                let response = await fetch("{% url 'notifications_count' %}"); // Replace with your actual URL
-                let data = await response.json();
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Navigation Bar with Theme and Language Controls -->
+            <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+                <div class="px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center h-16">
+                        <!-- Mobile menu button -->
+                        <button id="mobile-menu-button" class="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-all duration-300">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Page Title -->
+                        <div class="flex-1 flex items-center justify-center md:justify-start">
+                            <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                                {% block page_title %}Dashboard{% endblock %}
+                            </h1>
+                        </div>
+                        
+                        <!-- Theme and Language Controls -->
+                        <div class="flex items-center space-x-3">
+                            <!-- Language Selector -->
+                            <div class="relative">
+                                <button id="language-button" class="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Language Dropdown -->
+                                <div id="language-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 transform transition-all duration-200 origin-top-right">
+                                    {% get_current_language as LANGUAGE_CODE %}
+                                    {% get_available_languages as LANGUAGES %}
+                                    {% get_language_info_list for LANGUAGES as languages %}
+                                    {% for language in languages %}
+                                    <button onclick="changeLanguage('{{ language.code }}')" 
+                                            class="language-option w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {% if language.code == LANGUAGE_CODE %}bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400{% endif %}">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-lg">
+                                                {% if language.code == 'en' %}US
+                                                {% elif language.code == 'es' %}🇪🇸
+                                                {% elif language.code == 'fr' %}🇫🇷
+                                                {% elif language.code == 'de' %}🇩🇪
+                                                {% elif language.code == 'zh' %}🇨🇳
+                                                {% else %}🌐
+                                                {% endif %}
+                                            </span>
+                                            <span>{{ language.name_local }}</span>
+                                            {% if language.code == LANGUAGE_CODE %}
+                                            <svg class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            {% endif %}
+                                        </div>
+                                    </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Theme Selector -->
+                            <div class="relative">
+                                <button id="theme-button" class="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300">
+                                    <svg id="theme-icon-light" class="h-5 w-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                    </svg>
+                                    <svg id="theme-icon-dark" class="h-5 w-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                    </svg>
+                                </button>
+                                
+                                <!-- Theme Dropdown -->
+                                <div id="theme-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50">
+                                    <button onclick="setTheme('light')" class="theme-option w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                        <div class="flex items-center space-x-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                            </svg>
+                                            <span>{% trans "Light" %}</span>
+                                        </div>
+                                    </button>
+                                    <button onclick="setTheme('dark')" class="theme-option w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                        <div class="flex items-center space-x-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                            </svg>
+                                            <span>{% trans "Dark" %}</span>
+                                        </div>
+                                    </button>
+                                    <button onclick="setTheme('system')" class="theme-option w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                        <div class="flex items-center space-x-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <span>{% trans "System" %}</span>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Header Buttons Block -->
+                            {% block header_buttons %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
                 
-                let badge = document.getElementById("notification-badge");
-                if (data.count > 0) {
-                    if (!badge) {
-                        let link = document.querySelector(".nav-link[href='{% url 'notifications' %}']");
-                        badge = document.createElement("span");
-                        badge.id = "notification-badge";
-                        badge.className = "badge bg-info ms-2";
-                        link.appendChild(badge);
-                    }
-                    badge.textContent = data.count;
-                } else if (badge) {
-                    badge.remove();
-                }
-            } catch (error) {
-                console.error("Error fetching notifications:", error);
+                <!-- Animated Progress Bar -->
+                <div class="h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transform scale-x-0 animate-expand-width origin-left"></div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="flex-1 overflow-y-auto">
+                <div class="px-4 sm:px-6 lg:px-8 py-8">
+                    {% block dashboard_content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Sidebar -->
+<div id="mobile-sidebar" class="fixed inset-0 z-50 hidden md:hidden">
+    <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm" onclick="toggleMobileSidebar()"></div>
+    <div class="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-out">
+        <div class="flex items-center justify-between h-20 px-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <span class="text-xl font-bold text-gray-900 dark:text-white">ER-HMS</span>
+            </div>
+            <button onclick="toggleMobileSidebar()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+            <nav class="px-4 py-6 space-y-2">
+                {% block mobile_sidebar_items %}
+                <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+                <a href="{% url 'list_appointment' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Appointments</a>
+                <a href="{% url 'notifications' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Notifications</a>
+                <a href="{% url 'logout' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">Logout</a>
+                {% endblock %}
+            </nav>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes expandWidth {
+        from {
+            transform: scaleX(0);
+        }
+        to {
+            transform: scaleX(1);
+        }
+    }
+    
+    .animate-expand-width {
+        animation: expandWidth 0.8s ease-out forwards;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+    
+    .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    /* Dropdown animations */
+    .dropdown-enter {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    
+    .dropdown-enter-active {
+        opacity: 1;
+        transform: scale(1);
+        transition: opacity 0.2s, transform 0.2s;
+    }
+</style>
+
+<script>
+    // Mobile sidebar toggle
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('mobile-sidebar');
+        sidebar.classList.toggle('hidden');
+    }
+    
+    // Language dropdown toggle
+    document.getElementById('language-button')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const dropdown = document.getElementById('language-dropdown');
+        const themeDropdown = document.getElementById('theme-dropdown');
+        
+        dropdown.classList.toggle('hidden');
+        if (themeDropdown) themeDropdown.classList.add('hidden');
+    });
+    
+    // Theme dropdown toggle
+    document.getElementById('theme-button')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const dropdown = document.getElementById('theme-dropdown');
+        const langDropdown = document.getElementById('language-dropdown');
+        
+        dropdown.classList.toggle('hidden');
+        if (langDropdown) langDropdown.classList.add('hidden');
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        const langDropdown = document.getElementById('language-dropdown');
+        const themeDropdown = document.getElementById('theme-dropdown');
+        const langButton = document.getElementById('language-button');
+        const themeButton = document.getElementById('theme-button');
+        
+        if (langDropdown && !langDropdown.contains(e.target) && !langButton?.contains(e.target)) {
+            langDropdown.classList.add('hidden');
+        }
+        
+        if (themeDropdown && !themeDropdown.contains(e.target) && !themeButton?.contains(e.target)) {
+            themeDropdown.classList.add('hidden');
+        }
+    });
+    
+    // Set theme function
+    function setTheme(theme) {
+        const html = document.documentElement;
+        
+        if (theme === 'light') {
+            html.classList.remove('dark');
+            html.classList.add('light');
+            localStorage.setItem('theme', 'light');
+        } else if (theme === 'dark') {
+            html.classList.add('dark');
+            html.classList.remove('light');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            html.classList.add('system-theme');
+            localStorage.setItem('theme', 'system');
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (isDark) {
+                html.classList.add('dark');
+                html.classList.remove('light');
+            } else {
+                html.classList.add('light');
+                html.classList.remove('dark');
             }
         }
-
-        // Fetch count every 30 seconds
-        setInterval(fetchNotificationCount, 30000);
-
-        // Run on page load
-        document.addEventListener("DOMContentLoaded", fetchNotificationCount);
-
-    </script>
+        
+        // Close dropdown
+        document.getElementById('theme-dropdown')?.classList.add('hidden');
+        
+        // Show notification
+        window.showNotification(`Theme changed to ${theme}`, 'success');
+    }
+    
+    // Notification count fetch (implement as needed)
+    async function fetchNotificationCount() {
+        try {
+            let response = await fetch("{% url 'notifications_count' %}");
+            let data = await response.json();
+            
+            let badge = document.getElementById("notification-badge");
+            if (data.count > 0) {
+                if (badge) {
+                    badge.textContent = data.count;
+                    badge.classList.remove('hidden');
+                }
+            } else if (badge) {
+                badge.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
+        }
+    }
+    
+    // Initial notification count
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchNotificationCount();
+        
+        // Close mobile sidebar on window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                const sidebar = document.getElementById('mobile-sidebar');
+                if (sidebar && !sidebar.classList.contains('hidden')) {
+                    sidebar.classList.add('hidden');
+                }
+            }
+        });
+    });
+    
+    // Auto-refresh notifications every 30 seconds
+    setInterval(fetchNotificationCount, 30000);
+</script>
 {% endblock %}

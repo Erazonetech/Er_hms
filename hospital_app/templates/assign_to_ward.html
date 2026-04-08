@@ -1,106 +1,472 @@
-{% extends "dashboard_base.html" %}
+{% extends "doctor_dashboard.html" %}
 {% block page_title %}Assign to Ward{% endblock %}
 
-{% block sidebar_items %}
-    <li class="nav-item">
-        <a class="nav-link" href="#">
-            Patient Vitals
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#">
-            Medication Schedule
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#">
-            Ward Management
-        </a>
-    </li>
-{% endblock %}
-
 {% block dashboard_content %}
-<div class="container mt-4">
-    <form method="POST" class="space-y-4">
-        {% csrf_token %}
-        <div class="row">
-        <!-- Ward Dropdown -->
-        <div class="col-md-4 mb-3">
-            <label for="ward" class="form-label">Choose a Ward:</label>
-            <select name="ward" id="ward" class="form-select {% if form.ward.errors %}is-invalid{% endif %}">
-                <option value="opd">Out Patient</option>
-                <option value="ipd">In Patient</option>
-                <option value="er">Emergency</option>
-            </select>
-            {% for error in form.ward.errors %}
-                <div class="invalid-feedback">{{ error }}</div>
-            {% endfor %}
+<div class="space-y-6">
+    <!-- Action Panel (Navbar) -->
+    <div class="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-6 py-4">
+            <div class="flex flex-wrap gap-3">
+                <a href="{% url 'update_visit' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Diagnosis
+                </a>
+                <a href="{% url 'add_system_exam' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    System Exam
+                </a>
+                {% if lab_requests %}
+                <a href="{% url 'edit_lab_request' lab_requests.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit Lab Test
+                </a>
+                <a href="{% url 'add_lab_request' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    + Lab Test
+                </a>
+                {% endif %}
+                {% if lab_results %}
+                <a href="{% url 'review_lab_results' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Review Lab Test
+                </a>
+                {% endif %}
+                <a href="{% url 'prescribe_view' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    + Prescription
+                </a>
+                <a href="{% url 'doctor_new_appointment' visit.patient.id visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    + Appointment
+                </a>
+                <a href="{% url 'assign_to_ward' visit.id %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-white/20 hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    Change Ward
+                </a>
+            </div>
         </div>
+    </div>
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-8 py-6">
+            <h1 class="text-2xl font-bold text-white mb-2">Assign Patient to Ward</h1>
+            <p class="text-indigo-100">Select the appropriate ward and assign a physician for patient care</p>
+        </div>
+    </div>
 
-        <div class="col-md-4 mb-3">
-            <label for="physician" class="form-label">Choose a physician:</label>
-            <select name="physician" id="physician" class="form-select {% if form.physician.errors %}is-invalid{% endif %}">
+    <!-- Form Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg dark:shadow-gray-900/30 overflow-hidden">
+        <div class="px-8 py-6">
+            <form method="POST" class="space-y-6" id="wardAssignmentForm">
+                {% csrf_token %}
                 
-            </select>
-            {% for error in form.physician.errors %}
-                <div class="invalid-feedback">{{ error }}</div>
-            {% endfor %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Ward Dropdown -->
+                    <div class="space-y-2">
+                        <label for="ward" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Choose a Ward
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select name="ward" id="ward" 
+                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 appearance-none">
+                                <option value="opd">🏥 Out Patient Department (OPD)</option>
+                                <option value="ipd">🛏️ In Patient Department (IPD)</option>
+                                <option value="er">🚨 Emergency Room (ER)</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        {% for error in form.ward.errors %}
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                        {% endfor %}
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Select the appropriate ward based on patient's condition</p>
+                    </div>
+
+                    <!-- Physician Dropdown -->
+                    <div class="space-y-2">
+                        <label for="physician" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Choose a Physician
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select name="physician" id="physician" 
+                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 appearance-none"
+                                    {% if not form.physician.value %}required{% endif %}>
+                                <option value="">Select a ward first...</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        {% for error in form.physician.errors %}
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                        {% endfor %}
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Select the attending physician for this patient</p>
+                    </div>
+
+                    <!-- Urgency Dropdown -->
+                    <div class="space-y-2">
+                        <label for="urgency" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Urgency Level
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select name="urgency" id="urgency" 
+                                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 appearance-none">
+                                <option value="non_urgent">🟢 Non-Urgent - Can wait for regular care</option>
+                                <option value="urgent">🔴 Urgent - Requires immediate attention</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        {% for error in form.urgency.errors %}
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+                        {% endfor %}
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Indicate the urgency level for this patient</p>
+                    </div>
+                </div>
+
+                <!-- Additional Info Section (Optional) -->
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <div class="space-y-2">
+                        <label for="notes" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Additional Notes (Optional)
+                        </label>
+                        <textarea name="notes" id="notes" rows="3" 
+                                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                                  placeholder="Any additional information or special instructions..."></textarea>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Provide any relevant information for the attending physician</p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                    <button type="submit" 
+                            class="inline-flex items-center justify-center px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Assign to Ward
+                    </button>
+                    
+                    <button type="reset" 
+                            class="inline-flex items-center justify-center px-6 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Reset Form
+                    </button>
+                    
+                    <a href="{% url 'dashboard' %}" 
+                       class="inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Information Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-300">Out Patient (OPD)</h4>
+                    <p class="text-xs text-blue-700 dark:text-blue-400">For patients who don't require overnight stay</p>
+                </div>
+            </div>
         </div>
         
-
-
-        <!-- Urgency Dropdown -->
-        <div class="col-md-4 mb-3">
-            <label for="urgency" class="form-label">Urgency:</label>
-            <select name="urgency" id="urgency" class="form-select {% if form.urgency.errors %}is-invalid{% endif %}">
-                <option value="non_urgent">No</option>
-                <option value="urgent">Yes</option>
-            </select>
-            {% for error in form.urgency.errors %}
-                <div class="invalid-feedback">{{ error }}</div>
-            {% endfor %}
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-green-900 dark:text-green-300">In Patient (IPD)</h4>
+                    <p class="text-xs text-green-700 dark:text-green-400">For patients requiring overnight admission</p>
+                </div>
+            </div>
         </div>
-
-        <!-- Submit Button -->
-        <button type="submit" class="btn btn-success">
-            Submit
-        </button>
+        
+        <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-red-900 dark:text-red-300">Emergency (ER)</h4>
+                    <p class="text-xs text-red-700 dark:text-red-400">For critical/emergency cases requiring immediate care</p>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
 </div>
- <!-- Include jQuery first -->
-<!-- Include jQuery from CDN -->
+
+<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- Include Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
+<script>
     $(document).ready(function() {
-        // Trigger change event on region field to load zones if it has a default value
+        // Trigger change event on ward field if it has a default value
         if ($('#ward').val()) {
             $('#ward').trigger('change');
         }
+        
+        // Add loading indicator for AJAX requests
+        $(document).ajaxStart(function() {
+            $('#physician').prop('disabled', true);
+            $('#physician').html('<option value="">Loading physicians...</option>');
+        }).ajaxStop(function() {
+            $('#physician').prop('disabled', false);
+        });
     });
 
-// On Department change, fetch physician via AJAX
-$('#ward').change(function() {
-    var department = $(this).val();
-    $.ajax({
-        url: "{% url 'get_doctor_by_department' %}",
-        data: {
-            'department': department
-        },
-        success: function(data) {
-            var physicianSelect = $('#physician');           
-            physicianSelect.empty();  // Clear existing options
-            physicianSelect.append('<option value="">Select physician</option>');  // Default option
-            data.forEach(function(doctor) {
-                physicianSelect.append('<option value="' + doctor.id + '">' + doctor.first_name + ' '+ doctor.middle_name +'</option>');
-            });
+    // On Ward change, fetch physicians via AJAX
+    $('#ward').change(function() {
+        var department = $(this).val();
+        
+        // Add visual feedback
+        const physicianSelect = $('#physician');
+        physicianSelect.css('opacity', '0.6');
+        
+        $.ajax({
+            url: "{% url 'get_doctor_by_department' %}",
+            data: {
+                'department': department
+            },
+            method: 'GET',
+            success: function(data) {
+                physicianSelect.empty();
+                
+                if (data && data.length > 0) {
+                    physicianSelect.append('<option value="">Select physician</option>');
+                    $.each(data, function(index, doctor) {
+                        const fullName = doctor.first_name + ' ' + (doctor.middle_name || '') + ' ' + doctor.last_name;
+                        physicianSelect.append('<option value="' + doctor.id + '">👨‍⚕️ ' + fullName.trim() + '</option>');
+                    });
+                    
+                    // Show success feedback
+                    showToast('Physicians loaded successfully', 'success');
+                } else {
+                    physicianSelect.append('<option value="">No physicians available for this ward</option>');
+                    showToast('No physicians found for this ward', 'warning');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading physicians:', error);
+                physicianSelect.empty();
+                physicianSelect.append('<option value="">Error loading physicians. Please try again.</option>');
+                showToast('Failed to load physicians. Please check your connection.', 'error');
+            },
+            complete: function() {
+                physicianSelect.css('opacity', '1');
+            }
+        });
+    });
+    
+    // Reset button functionality
+    $('button[type="reset"]').click(function(e) {
+        e.preventDefault();
+        
+        // Reset form fields
+        $('#ward').val('opd').trigger('change');
+        $('#urgency').val('non_urgent');
+        $('#notes').val('');
+        
+        // Show confirmation
+        showToast('Form has been reset', 'info');
+    });
+    
+    // Form validation before submit
+    $('#wardAssignmentForm').submit(function(e) {
+        const ward = $('#ward').val();
+        const physician = $('#physician').val();
+        const urgency = $('#urgency').val();
+        
+        if (!ward) {
+            showToast('Please select a ward', 'error');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!physician) {
+            showToast('Please select a physician', 'error');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!urgency) {
+            showToast('Please select urgency level', 'error');
+            e.preventDefault();
+            return false;
+        }
+        
+        // Show loading state on submit button
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        submitBtn.html('<svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Processing...');
+        submitBtn.prop('disabled', true);
+        
+        return true;
+    });
+    
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'fixed bottom-4 right-4 z-50 space-y-2';
+            document.body.appendChild(toastContainer);
+        }
+        
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'green' : type === 'error' ? 'red' : type === 'warning' ? 'yellow' : 'blue';
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+        
+        toast.className = 'transform transition-all duration-500 translate-x-0 mb-2';
+        toast.innerHTML = `
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-4 min-w-80 border-l-4 border-${bgColor}-500 dark:border-${bgColor}-400">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 text-xl">${icon}</div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" class="ml-auto text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        ✕
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            toast.style.transform = 'translateX(400px)';
+            setTimeout(() => toast.remove(), 500);
+        }, 5000);
+    }
+    
+    // Add keyboard shortcuts (Enter to submit, Escape to reset)
+    $(document).keydown(function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            $('#wardAssignmentForm').submit();
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            $('button[type="reset"]').click();
         }
     });
-});
-
+    
+    // Add tooltips for better UX
+    $('label').hover(function() {
+        const helpText = $(this).siblings('.text-xs');
+        if (helpText.length) {
+            helpText.css('opacity', '1');
+        }
+    });
 </script>
+
+<style>
+    /* Custom styles for enhanced UX */
+    select:focus, textarea:focus {
+        outline: none;
+    }
+    
+    /* Smooth transitions for form elements */
+    select, textarea, button {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    /* Loading animation for select */
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
+    }
+    
+    .loading {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    /* Custom scrollbar for textarea */
+    textarea::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    textarea::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    textarea::-webkit-scrollbar-thumb {
+        background: #c7d2fe;
+        border-radius: 4px;
+    }
+    
+    textarea::-webkit-scrollbar-thumb:hover {
+        background: #818cf8;
+    }
+    
+    /* Dark mode scrollbar */
+    .dark textarea::-webkit-scrollbar-track {
+        background: #374151;
+    }
+    
+    .dark textarea::-webkit-scrollbar-thumb {
+        background: #4f46e5;
+    }
+</style>
 {% endblock %}

@@ -271,6 +271,6 @@ def notify_department_staffs(department_name, role, message):
 # @login_required
 # def logout_view(request):
     """Logs out the user and redirects to login page."""
-    logout(request)
-    messages.info(request, "You have been logged out.")
-    return redirect('login')
+    #logout(request)
+    #messages.info(request, "You have been logged out.")
+    #return redirect('login')

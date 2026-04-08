@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from accounts.models import Staff, Notification
+from accounts.models import Staff
 from accounts.views import notify_department_staffs, notify_staff
 from hospital_app.models import LabResult, LabResultItem, LabTestRequest, SystemExamination, TriageRecord, Visit, Prescription, PrescriptionItem, Drug
 from .helper import calculate_bmi
@@ -11,9 +11,124 @@ from django.contrib import messages
 from registrar.models import Patient
 from django.utils.timezone import now
 from datetime import timedelta
+from registrar.models import Appointments, Patient, Zone, Woreda
 from finance.models import Service, Payment
+from registrar.forms import AppointmentForm
 
 yesterday = now().date() - timedelta(days=1)
+
+@login_required
+def add_new_appointment_doctor(request, patient_id, visit_id):
+    try:
+        today = now().date()
+        patient = get_object_or_404(Patient, pk=patient_id)
+        appointment, _ = Appointments.objects.get_or_create(date=today, patient=patient, appointed_by=request.user )
+        form = AppointmentForm(instance=appointment)
+        if request.method == 'POST':
+            form = AppointmentForm(request.POST, instance=appointment)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Visit details Updated.")
+                if request.user.role == 'doctor':
+                    visit = Visit.objects.filter(
+                        is_active = True,
+                        attending_physician=request.user,
+                        patient=patient,
+                    ).first()
+                    if not visit:
+                        return redirect('doctor_dashboard')    
+                    return redirect('doctor_detail', patient_id=patient_id, visit_id=visit_id)
+                return redirect('patient_id')
+        return render(request, 'doctor_add_appointment.html', {'form': form, 'patient': patient, 'visit_id': visit_id})
+    except Exception as e:
+        print(str(e))
+        return JsonResponse({'error': f'Exce:  {str(e)}'})
+
+@login_required
+def get_patients_waiting(request):
+    try:
+        my_visits = Visit.objects.filter(
+            is_active = True,
+            attending_physician=request.user
+        ).order_by('-visit_date')
+        my_visits = my_visits.exclude(status='completed')
+        if not my_visits:
+            return JsonResponse({})
+        data = [{
+            'id': v.id,
+            'patient': {
+                'id': v.patient.id,
+                'record_no': v.patient.record_no,
+                'first_name': v.patient.first_name,
+                'middle_name': v.patient.middle_name,
+                'last_name': v.patient.last_name,
+            },
+            'urgency': v.urgency,
+            'urgency_display': v.assigned_ward,
+            'status_display': v.advice,
+        } for v in my_visits]
+        print(data)
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        print(str(e))
+
+@login_required
+def get_patients_waiting_in_ward(request):
+    try:
+        visits = Visit.objects.filter(
+            is_active = True, 
+            assigned_ward=request.user.department,
+        ).order_by('-visit_date')
+        visits = visits.exclude(status='completed')
+        if not visits:
+            return JsonResponse({})
+        data = [{
+            'id': v.id,
+            'patient': {
+                'id': v.patient.id,
+                'record_no': v.patient.record_no,
+                'first_name': v.patient.first_name,
+                'middle_name': v.patient.middle_name,
+                'last_name': v.patient.last_name,
+            },
+            'urgency': v.urgency,
+            'urgency_display': v.assigned_ward,
+            'status_display': v.advice,
+        } for v in visits]
+        print(data)
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        print(str(e))
+        return JsonResponse({'error': str(e)})
+
+@login_required
+def get_patients_lab_request(request):
+    try:
+        lab_request = LabTestRequest.objects.filter(
+            requested_by=request.user,
+        )
+        lab_request = lab_request.exclude(status='completed')
+        print(lab_request)
+        if not lab_request:
+            messages.success(request, "Diagnosis details Updated.")
+            return JsonResponse({})
+        data = [{
+            'id': v.id,
+            'patient': {
+                'id': v.visit.patient.id,
+                'record_no': v.visit.patient.record_no,
+                'first_name': v.visit.patient.first_name,
+                'middle_name': v.visit.patient.middle_name,
+                'last_name': v.visit.patient.last_name,
+            },
+            'urgency': v.is_urgent,
+            'urgency_display': v.requested_at,
+            'status_display': v.status,
+        } for v in lab_request]
+        print(data)
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        print(str(e))
 
 @login_required
 def doctor_dashboard(request):
@@ -59,7 +174,7 @@ def doctor_detail(request, patient_id, visit_id):
     visits = Visit.objects.filter(patient=patient, is_active=False).order_by("-visit_date")
     
     lab_results = LabResult.objects.filter(lab_request__visit=visit).order_by("-reviewed_at")
-    lab_requests = LabTestRequest.objects.get(visit=visit)
+    lab_requests = LabTestRequest.objects.filter(visit=visit).first()
     
     vitals = TriageRecord.objects.filter(visit=visit).order_by("-created_at").first()
     form = VisitForm(instance=visit)
@@ -80,6 +195,27 @@ def doctor_detail(request, patient_id, visit_id):
     })
 
 @login_required
+def doctor_appointments(request):
+    try:
+        today = now().date()
+        appointments = Visit.objects.filter(
+            is_active = False, 
+            next_appointment_date=today, 
+            assigned_ward=request.user.department
+        )
+        # lets get the next three days appointments
+        upcoming_appointments = Visit.objects.filter(
+            is_active = False,
+            next_appointment_date__gt=today,
+            next_appointment_date__lte=today + timedelta(days=3),
+            assigned_ward=request.user.department
+        )
+        return render(request, 'doctor_appointments.html', {'appointments': appointments, 'upcoming_appointments': upcoming_appointments})
+    except Exception as e:
+        messages.error(f'Exception at doctor appointment: {str(e)}')
+        return JsonResponse({'error': f'exc: {str(e)}'})
+
+@login_required
 def update_visit_by_doctor(request, visit_id):
     visit = get_object_or_404(Visit, pk=visit_id)
     form = VisitForm(instance=visit)
@@ -89,7 +225,7 @@ def update_visit_by_doctor(request, visit_id):
             form.save()
             messages.success(request, "Visit details Updated.")
             return redirect('doctor_detail', patient_id=visit.patient.id, visit_id=visit_id)
-    return render(request, 'visit_form.html', {'form': form})
+    return render(request, 'visit_form.html', {'form': form, 'visit': visit})
 
 @login_required
 def new_appointment(request, visit_id):
@@ -106,7 +242,7 @@ def new_appointment(request, visit_id):
 @login_required
 def add_system_exam(request, visit_id):
     visit = get_object_or_404(Visit, pk=visit_id)
-    system_exam = get_object_or_404(SystemExamination, visit__id=visit_id)
+    system_exam, _ = SystemExamination.objects.get_or_create(visit=visit)
     
     if request.method == 'POST':
         form = SystemExamForm(request.POST, instance=system_exam)
@@ -116,7 +252,7 @@ def add_system_exam(request, visit_id):
             return redirect('doctor_detail', patient_id=visit.patient.pk, visit_id=visit.pk)
     else:
         form = SystemExamForm(instance=system_exam)
-    return render(request, 'system_exam_form.html', {'form': form})
+    return render(request, 'system_exam_form.html', {'form': form, 'visit': visit})
 
 @login_required
 def triage_dashboard(request):
